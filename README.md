@@ -11,8 +11,12 @@
 
 ---
 
-> [!CAUTION]
-> 🚧 This is a work in progress.
+## Requirements
+
+- Bash 5.0+
+- jq
+- curl
+- pup (auto-installed if missing; requires Go for first-time install)
 
 ---
 
@@ -25,6 +29,35 @@ chmod +x nyaa-cli
 sudo ln -sf "$(pwd)/nyaa-cli" /usr/local/bin/nyaa-cli
 ```
 
+## Bash 5+ Requirement (macOS users)
+
+This script requires **Bash 5.0 or later**.
+
+On macOS, the default `/bin/bash` is too old.  
+Install the latest Bash with Homebrew:
+
+```sh
+brew install bash
+```
+
+Then, either:
+- Run the script with the full path:
+  ```sh
+  /opt/homebrew/bin/bash ./nyaa-cli ...
+  ```
+- Or, add Homebrew Bash to your PATH (Apple Silicon):
+  ```sh
+  echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+  (For Intel Macs, use `/usr/local/bin`.)
+
+Check your Bash version:
+```sh
+bash --version
+```
+It should say 5.x or later.
+
 ## Usage
 
 ```bash
@@ -36,17 +69,14 @@ nyaa-cli --name "one piece" --ep 120
 # Download the 120th episode of one piece from Erai
 nyaa-cli --name "one piece" --ep 120 --uploader "Erai"
 
-# Download the 120th to 130th episode of one piece
+# Download all episodes from 120 onward
 nyaa-cli --name "one piece" --from 120
 
-# Download the 120th to 130th episode of one piece
+# Download episodes 120 to 130
 nyaa-cli --name "one piece" --from 120 --to 130
 
-# Download the 120th episode of one piece in 720p quality
+# Download episodes from 120 in 720p quality
 nyaa-cli --name "one piece" --from 120 --quality "720"
-
-# Download the 120th episode of one piece in 720p quality and save it to ~/Downloads
-nyaa-cli --name "one piece" --from 120 --quality "720" --output "~/Downloads"
 ```
 
 ---
@@ -56,16 +86,16 @@ nyaa-cli --name "one piece" --from 120 --quality "720" --output "~/Downloads"
 | Option      | Description                                              | Required | Default |
 |-------------|----------------------------------------------------------|----------|---------|
 | --name      | The name of the anime                                    | Yes      | -       |
-| --ep        | The episode number                                       | Yes      | -       |
-| --from      | The starting episode number                              | No       | -       |
+| --ep        | The episode number                                       | Yes*     | -       |
+| --from      | The starting episode number                              | Yes*     | -       |
 | --to        | The ending episode number                                | No       | -       |
 | --quality   | The quality of the episode (480, 720, 1080)              | No       | 720     |
-| --output    | The output directory                                     | No       | `$PWD`  |
-| --uploader  | The uploader of the episode (`Erai`, `Subsplease`, ...)  | No       | -       |
+| --uploader  | The uploader of the episode (`Erai`, `SubsPlease`, ...)  | No       | -       |
 
 - `--from` and `--ep` can't be used together.
-- `--from` without `--to` will download all episodes available episodes from the starting episode.
-- not specifying the `--uploader` will select the highest seeder.
+- Either `--ep` or `--from` is required.
+- `--from` without `--to` will download all available episodes from the starting episode.
+- Not specifying the `--uploader` will select the highest seeder.
 
 ---
 
