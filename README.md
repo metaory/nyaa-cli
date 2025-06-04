@@ -1,4 +1,3 @@
-
 <div align="center">
     <h1>nyaa-cli</h1>
     <img src=".github/logo.svg" alt="nyaa-cli" width="128" height="128">
@@ -111,7 +110,8 @@ nyaa-cli --name "one piece" --from 120 --quality "720"
 
 ---
 
-## Example Workflow
+<details>
+<summary><strong>Example Workflow</strong></summary>
 
 You can use `nyaa-cli` to automate your anime downloads with a torrent client that supports directory watching. For example, with **rtorrent**, you can configure it to watch a directory for new `.torrent` files. When a torrent file is placed there, rtorrent will automatically start downloading it.
 
@@ -125,6 +125,8 @@ A typical workflow:
 3. Your torrent client will pick up the new files and start downloading automatically.
 
 Many other torrent clients also support directory watching for automation.
+
+</details>
 
 ---
 
