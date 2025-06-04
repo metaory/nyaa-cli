@@ -2,7 +2,7 @@
 <div align="center">
     <h1>nyaa-cli</h1>
     <img src=".github/logo.svg" alt="nyaa-cli" width="128" height="128">
-    <h5>Bulk anime torrent fetcher for <a href="https://nyaa.si">nyaa.si</a></h5>
+    <h4>Bulk anime torrent fetcher for <a href="https://nyaa.si">nyaa.si</a></h4>
 </div>
 
 ---

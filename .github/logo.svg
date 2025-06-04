@@ -1,10 +1,118 @@
-<svg viewBox="0 0 64 64" width="128" height="128" xmlns="http://www.w3.org/2000/svg">
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="#2211bb" stroke="#220033" stroke-width="4" />
-  <ellipse cx="32" cy="40" rx="18" ry="10" fill="#eeaaff" stroke="#220033" stroke-width="3" />
-  <ellipse cx="24" cy="36" rx="2.5" ry="4" fill="#2211bb" stroke="#220033" stroke-width="2" />
-  <ellipse cx="40" cy="36" rx="2.5" ry="4" fill="#2211bb" stroke="#220033" stroke-width="2" />
-  <path d="M20 24 Q32 10 44 24" fill="none" stroke="#220033" stroke-width="3" stroke-linecap="round" />
-  <circle cx="32" cy="44" r="2" fill="#220033" />
-  <path d="M16 16 Q20 8 24 16" fill="none" stroke="#220033" stroke-width="3" stroke-linecap="round" />
-  <path d="M48 16 Q44 8 40 16" fill="none" stroke="#220033" stroke-width="3" stroke-linecap="round" />
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 55.07169 60.506939"
+   width="110.14338"
+   height="121.01388"
+   version="1.1"
+   id="svg9"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs9" />
+  <rect
+     x="2.5"
+     y="16.506939"
+     width="48"
+     height="40"
+     rx="16"
+     fill="#e0aaff"
+     stroke="#220033"
+     stroke-width="5"
+     id="rect1"
+     style="fill:#eeaaff" />
+  <polygon
+     points="24,4 32,16 16,16 "
+     stroke="#220033"
+     stroke-width="5"
+     id="polygon1"
+     transform="translate(-5.5,0.50693911)" />
+  <polygon
+     points="56,4 40,16 48,16 "
+     fill="#e0aaff"
+     stroke="#220033"
+     stroke-width="5"
+     id="polygon2"
+     transform="translate(-5.5,0.50693911)" />
+  <polygon
+     points="24,7 28,16 20,16 "
+     fill="#ffb3c6"
+     id="polygon3"
+     transform="translate(-5.5,0.50693911)" />
+  <polygon
+     points="52,7 48,16 44,16 "
+     fill="#ffb3c6"
+     id="polygon4"
+     transform="translate(-5.5,0.50693911)" />
+  <path
+     d="m 50.5,48.506939 q 6,6 -2,10"
+     stroke="#220033"
+     stroke-width="4"
+     fill="none"
+     stroke-linecap="round"
+     id="path4" />
+  <path
+     d="m 50.5,48.506939 q 4,6 -1,8"
+     stroke="#e0aaff"
+     stroke-width="2"
+     fill="none"
+     stroke-linecap="round"
+     id="path5" />
+  <ellipse
+     cx="26.5"
+     cy="41.819218"
+     rx="1.2"
+     ry="0.80000001"
+     fill="#ffb3c6"
+     stroke="#220033"
+     stroke-width="1"
+     id="ellipse5" />
+  <path
+     d="m 24,44.506939 q 2.5,2 5,0"
+     stroke="#220033"
+     stroke-width="2"
+     fill="none"
+     stroke-linecap="round"
+     id="path6"
+     style="stroke-width:2.5;stroke-dasharray:none" />
+  <path
+     d="m 19.5,43.506939 q -3,1 -5,0"
+     stroke="#220033"
+     stroke-width="1.2"
+     fill="none"
+     stroke-linecap="round"
+     id="path7"
+     style="stroke-width:2;stroke-dasharray:none" />
+  <path
+     d="m 33.5,43.506939 q 3,1 5,0"
+     stroke="#220033"
+     stroke-width="1.2"
+     fill="none"
+     stroke-linecap="round"
+     id="path8"
+     style="stroke-width:2;stroke-dasharray:none" />
+  <ellipse
+     cx="16.5"
+     cy="46.506939"
+     rx="2.2"
+     ry="0.80000001"
+     fill="#ffb3c6"
+     opacity="0.9"
+     id="ellipse8"
+     style="fill:#ff4488" />
+  <ellipse
+     cx="36.5"
+     cy="46.506939"
+     rx="2.2"
+     ry="0.80000001"
+     fill="#ffb3c6"
+     opacity="0.9"
+     id="ellipse9"
+     style="fill:#ff4488" />
+  <path
+     d="m 9.078318,28.157703 q 0,-2.645035 2.645035,-2.645035 2.645035,0 2.645035,2.645035 0,2.645035 -2.645035,5.290071 -2.645035,-2.645036 -2.645035,-5.290071 z"
+     fill="#ff5fa2"
+     stroke="#220033"
+     stroke-width="1.05801"
+     id="path9"
+     style="fill:#ff4488" />
 </svg>
