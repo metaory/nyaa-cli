@@ -1,0 +1,151 @@
+#!/bin/bash
+set -euo pipefail
+set -E
+
+# ───────────────[ DEFAULTS ]
+BASE_URL="https://nyaa.si"
+QUALITY="720"
+CAT="1_2"
+PAGE=1
+FROM=
+TO=
+NAME=
+EP=
+UPLOADER=
+TMP=$(mktemp -d)
+
+# ───────────────[ TRAP ]
+function on_error {
+    local exit_code=$?
+    local line_no=$1
+    local cmd=$2
+    printf '[%s] ❌ ERROR at line %s: %s (exit %s)\n' \
+        "$(date '+%H:%M:%S')" "$line_no" "$cmd" "$exit_code" >&2
+}
+
+function cleanup { rm -rf "$TMP"; }
+
+trap 'on_error $LINENO "$BASH_COMMAND"' ERR
+trap cleanup EXIT
+trap 'echo "Interrupted"; cleanup; exit 1' INT
+
+# ───────────────[ REQUIREMENTS ]
+command -v pup >/dev/null 2>&1 || {
+    echo installing pup...
+    command -v go >/dev/null 2>&1 || {
+        echo 'Go not found. Please install Go.'
+        exit 1
+    }
+    go install github.com/ericchiang/pup@latest
+    sudo mv ~/go/bin/pup /usr/local/bin/
+}
+
+# ───────────────[ OPTIONS ]
+usage() {
+  cat <<EOF
+nyaa-cli :: Download episodes in bulk from nyaa.si
+
+Usage:
+  nyaa-cli --name "one piece" --ep 120
+  nyaa-cli --name "one piece" --from 120 [--to 130]
+  nyaa-cli --name "one piece" --ep 120 --uploader "Erai"
+  nyaa-cli --name "one piece" --from 120 --quality "720"
+
+Options:
+  --name      Anime name (required)
+  --ep        Episode number (exclusive with --from)
+  --from      Starting episode (exclusive with --ep)
+  --to        Ending episode (optional, with --from)
+  --quality   Video quality (default: 720)
+  --uploader  Uploader filter (e.g. Erai, SubsPlease)
+
+Notes:
+  --from and --ep can't be used together.
+  --from without --to downloads all episodes from start.
+  Not specifying --uploader picks highest seeder.
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --help|-h)
+        usage
+        exit 0
+        ;;
+    --ep)
+        EP="$2"
+        shift 2
+        ;;
+    --from)
+        FROM="$2"
+        shift 2
+        ;;
+    --to)
+        TO="$2"
+        shift 2
+        ;;
+    --quality)
+        QUALITY="$2"
+        shift 2
+        ;;
+    --name)
+        NAME="${2// /+}"
+        shift 2
+        ;;
+    --uploader)
+        UPLOADER="$2"
+        shift 2
+        ;;
+    *)
+        echo "unknown arg: $1"
+        usage
+        exit 1
+        ;;
+    esac
+done
+
+# ───────────────[ ASSERTS ]
+[ -z "$NAME" ] && {
+    echo "❌ missing: --name" >&2
+    usage
+    exit 127
+}
+[ -n "$FROM" ] && [ -n "$EP" ] && {
+    echo "❌ cannot use both --from and --ep" >&2
+    usage
+    exit 127
+}
+[ -z "$FROM" ] && [ -z "$EP" ] && {
+    echo "❌ either --from or --ep must be set" >&2
+    usage
+    exit 127
+}
+
+for cmd in jq curl pup ; do
+  command -v "$cmd" >/dev/null || {
+    echo "❌ missing: $cmd" >&2
+    exit 127
+  }
+done
+
+# ───────────────[ DRIVER ]
+function get_episodes {
+    local url="${BASE_URL}/?c=${CAT}&p=${PAGE}&q=${QUALITY}+${UPLOADER}+${NAME}+${EP}"
+    curl -s "${url}" |
+        tee "${TMP}/nyaa.html" |
+        pup 'tr.success json{}' |
+        jq '[.[] | {
+            name: .children[1].children[0].title, 
+            size: .children[3].text, 
+            date: .children[4].text, 
+            seeds: .children[5].text, 
+            torrent_url: .children[2].children[0].href
+        }]' >"${TMP}/nyaa.json"
+}
+
+# 🚧 WIP
+# get_episodes
+
+# TODO:
+# - [ ] handle pagination
