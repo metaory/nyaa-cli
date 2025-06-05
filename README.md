@@ -73,56 +73,58 @@ It should say `5.x` or later
 
 ```bash
 # Basic usage - continues from last downloaded episode
-nyaa-cli --name "one piece"
+nyaa-cli -n "one piece"
 
 # Download a specific episode
-nyaa-cli --name "one piece" --episode 120
+nyaa-cli -n "one piece" -e 120
 
 # Download all episodes from a starting point
-nyaa-cli --name "one piece" --from 120
+nyaa-cli -n "one piece" -f 120
 
 # Download a specific range of episodes
-nyaa-cli --name "one piece" --from 120 --to 130
+nyaa-cli -n "one piece" -f 120 -t 130
 
 # Additional options
-nyaa-cli --name "one piece" --from 120 --quality "720"
-nyaa-cli --name "one piece" --from 120 --uploader "Erai"
+nyaa-cli -n "one piece" -f 120 -q "720"
+nyaa-cli -n "one piece" -f 120 -u "Erai"
 ```
 
 ### Usage Patterns
 
 The script supports four main usage patterns:
 
-1. **Continue from Last Episode** (`--name` only)
+1. **Continue from Last Episode** (`-n` only)
    - Automatically continues from the last downloaded episode
    - If no previous episodes found, starts from episode 1
    - Uses state file to track progress
 
-2. **Single Episode** (`--episode`)
+2. **Single Episode** (`-e`)
    - Downloads a specific episode
-   - Cannot be used with `--from` or `--to`
-   - Example: `--episode 120`
+   - Cannot be used with `-f` or `-t`
+   - Example: `-e 120`
 
-3. **From Episode to Present** (`--from` without `--to`)
+3. **From Episode to Present** (`-f` without `-t`)
    - Downloads all available episodes from the starting point
    - Continues until no more episodes are found
-   - Example: `--from 120`
+   - Example: `-f 120`
 
-4. **Episode Range** (`--from` and `--to`)
+4. **Episode Range** (`-f` and `-t`)
    - Downloads episodes within a specific range
-   - `--to` must be greater than `--from`
-   - Example: `--from 120 --to 130`
+   - `-t` must be greater than `-f`
+   - Example: `-f 120 -t 130`
 
 ### Additional Options
 
-| Option      | Description                                              | Required | Default |
-|-------------|----------------------------------------------------------|----------|---------|
-| --name      | The name of the anime                                    | Yes      | -       |
-| --episode   | Download a single episode                                | No       | -       |
-| --from      | The starting episode number                              | No       | -       |
-| --to        | The ending episode number                                | No       | -       |
-| --quality   | The quality of the episode (480, 720, 1080)              | No       | 720     |
-| --uploader  | The uploader of the episode (`Erai`, `SubsPlease`, ...)  | No       | -       |
+| Option      | Short | Description                                              | Required | Default |
+|-------------|-------|----------------------------------------------------------|----------|---------|
+| --name      | -n    | The name of the anime                                    | Yes      | -       |
+| --episode   | -e    | Download a single episode                                | No       | -       |
+| --from      | -f    | The starting episode number                              | No       | -       |
+| --to        | -t    | The ending episode number                                | No       | -       |
+| --quality   | -q    | The quality of the episode (480, 720, 1080)              | No       | 720     |
+| --uploader  | -u    | The uploader of the episode (`Erai`, `SubsPlease`, ...)  | No       | -       |
+| --output    | -o    | Directory to save torrent files                          | No       | ./output|
+| --help      | -h    | Show help message                                        | No       | -       |
 
 ---
 
@@ -160,10 +162,10 @@ A typical workflow:
    #!/bin/bash
    
    # Update One Piece
-   nyaa-cli --name "one piece"
+   nyaa-cli --name "one piece" --output ~/watch/torrents
    
    # Update Solo Leveling
-   nyaa-cli --name "solo leveling"
+   nyaa-cli --name "solo leveling" --output ~/watch/torrents
    ```
 
 3. Make the script executable:
@@ -183,6 +185,7 @@ A typical workflow:
 The script will:
 - Use the state file to automatically continue from the last downloaded episode
 - Download new episodes if available
+- Save torrent files with normalized filenames (lowercase, no spaces, no special characters)
 - Your torrent client will pick up the new files and start downloading automatically
 
 Many other torrent clients also support directory watching for automation.
