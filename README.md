@@ -1,7 +1,7 @@
 <div align="center">
     <h1>nyaa-cli</h1>
     <img src=".github/logo.svg" alt="nyaa-cli" width="128" height="128">
-    <h4>Bulk anime torrent fetcher for <a href="https://nyaa.si">nyaa.si</a></h4>
+    <h4>Smart anime torrent fetcher with stateful episode tracking</h4>
 </div>
 
 ---
@@ -9,8 +9,7 @@
 <p align="center">
   <a href="#requirements">Requirements</a> |
   <a href="#usage">Usage</a> |
-  <a href="#state">State</a> |
-  <a href="#roadmap">Roadmap</a>
+  <a href="#state">State</a>
 </p>
 
 
@@ -19,8 +18,8 @@
 - `Bash 5.0+`
 - `jq`
 - `curl`
-- `pup` _(auto-installed if missing)_
-- `Go` _(for first-time installation of `pup`)_
+- `pup` _(requires Go for first-time installation)_
+- `Go` _(only needed for first-time installation of `pup`)_
 
 ---
 
@@ -73,59 +72,71 @@ It should say `5.x` or later
 ## Usage
 
 ```bash
-nyaa-cli --help
-
-# Download the next episode (continues from last downloaded)
+# Basic usage - continues from last downloaded episode
 nyaa-cli --name "one piece"
 
-# Download a single episode
+# Download a specific episode
 nyaa-cli --name "one piece" --episode 120
 
-# Download from episode 120 onward
+# Download all episodes from a starting point
 nyaa-cli --name "one piece" --from 120
 
-# Download episodes 120 to 130
+# Download a specific range of episodes
 nyaa-cli --name "one piece" --from 120 --to 130
 
-# Download from episode 120 in 720p quality
+# Additional options
 nyaa-cli --name "one piece" --from 120 --quality "720"
-
-# Download from episode 120 from Erai
 nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 ```
 
----
+### Usage Patterns
 
-## Options
+The script supports four main usage patterns:
+
+1. **Continue from Last Episode** (`--name` only)
+   - Automatically continues from the last downloaded episode
+   - If no previous episodes found, starts from episode 1
+   - Uses state file to track progress
+
+2. **Single Episode** (`--episode`)
+   - Downloads a specific episode
+   - Cannot be used with `--from` or `--to`
+   - Example: `--episode 120`
+
+3. **From Episode to Present** (`--from` without `--to`)
+   - Downloads all available episodes from the starting point
+   - Continues until no more episodes are found
+   - Example: `--from 120`
+
+4. **Episode Range** (`--from` and `--to`)
+   - Downloads episodes within a specific range
+   - `--to` must be greater than `--from`
+   - Example: `--from 120 --to 130`
+
+### Additional Options
 
 | Option      | Description                                              | Required | Default |
 |-------------|----------------------------------------------------------|----------|---------|
 | --name      | The name of the anime                                    | Yes      | -       |
-| --episode   | Download a single episode (shorthand for --from X --to X) | No       | -       |
+| --episode   | Download a single episode                                | No       | -       |
 | --from      | The starting episode number                              | No       | -       |
 | --to        | The ending episode number                                | No       | -       |
 | --quality   | The quality of the episode (480, 720, 1080)              | No       | 720     |
 | --uploader  | The uploader of the episode (`Erai`, `SubsPlease`, ...)  | No       | -       |
 
-- If neither `--episode` nor `--from` is specified, continues from the last downloaded episode.
-- `--episode` is a shorthand for setting both `--from` and `--to` to the same value.
-- `--from` without `--to` will download all available episodes from the starting episode.
-- `--to` can only be used with `--from`.
-- Not specifying the `--uploader` will select the highest seeder.
-
 ---
 
 ## State
 
-The script maintains a state file at `~/.local/state/nyaa-cli/progress` to track the last downloaded episode for each anime. The state file is a simple TSV (Tab-Separated Values) file where:
+The script maintains a state file at `~/.local/state/nyaa-cli/progress` to track the last downloaded episode for each anime. The state file is a TSV (Tab-Separated Values) file where:
 
 - First column: Normalized anime name
 - Second column: Last downloaded episode number
 
 Example state file:
 ```
-one+piece    1278
-solo+leveling    18
+one+piece	1278
+solo+leveling	18
 ```
 
 The state is automatically updated whenever an episode is downloaded, and is used to:
@@ -149,10 +160,10 @@ A typical workflow:
    #!/bin/bash
    
    # Update One Piece
-   nyaa-cli --name "one piece" --output ~/watch/torrents
+   nyaa-cli --name "one piece"
    
    # Update Solo Leveling
-   nyaa-cli --name "solo leveling" --output ~/watch/torrents
+   nyaa-cli --name "solo leveling"
    ```
 
 3. Make the script executable:
@@ -172,27 +183,11 @@ A typical workflow:
 The script will:
 - Use the state file to automatically continue from the last downloaded episode
 - Download new episodes if available
-- Save torrent files to your watch directory
 - Your torrent client will pick up the new files and start downloading automatically
 
 Many other torrent clients also support directory watching for automation.
 
 </details>
-
----
-
-## Roadmap
-
-| Feature / Idea                                           | State |
-|----------------------------------------------------------|:-----:|
-| Download a single episode with `--ep`                    | 🟢    |
-| Download a range from `--from` to present                | 🟢    |
-| Download a range from `--from` to `--to`                 | 🟢    |
-| Filter by `--quality` (e.g. 720, 1080)                   | 🟢    |
-| Filter by `--uploader` (e.g. Erai, SubsPlease)           | 🟢    |
-| State management for tracking progress                   | 🟢    |
-| Output directory selection                               | 🟡️    |
-| Auto-resume: track last episode per series               | 🟢    |
 
 ---
 
