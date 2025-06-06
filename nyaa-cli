@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 set -euo pipefail
 set -o errtrace
 
 # ───────────────[ COLORS ]
-# c0= C0= c1= C1= c2= C2= c3= C3= c4= C4= c5= C5= c6= C6= c7= C7=
 for i in {0..7}; do
     printf -v "c$i" '\033[3%sm' "$i"
     printf -v "C$i" '\033[1;3%sm' "$i"
@@ -286,7 +286,7 @@ if [[ -n "$TO" && -z "$FROM" ]]; then
 fi
 
 # --to must be greater than --from
-if [[ -n "$TO" && -n "$FROM" && "$TO" -le "$FROM" ]]; then
+if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
     log error "--to ($TO) must be greater than --from ($FROM)"
     usage
     exit 1
