@@ -18,7 +18,6 @@
 - `Bash 5.0+`
 - `jq`
 - `curl`
-- `pup` _(requires Go for first-time installation)_
 - `Go` _(needed for first-time installation of `pup`)_
 
 <details>
