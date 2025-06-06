@@ -16,27 +16,27 @@
 <details>
 <summary><strong>Demos</strong></summary>
 <div align="center">
-   <div width="40%">
+   <div>
       <h3>Single Episode</h3>
-      <img src=".github/demos/single-episode.gif" alt="Single Episode" width="80%">
+      <img src=".github/demos/single-episode.gif" alt="Single Episode" width="90%">
       <p>Download a specific episode by number</p>
    </div>
    <hr>
-   <div width="40%">
+   <div>
       <h3>Episode Range</h3>
-      <img src=".github/demos/range.gif" alt="Episode Range" width="80%">
+      <img src=".github/demos/range.gif" alt="Episode Range" width="90%">
       <p>Download multiple episodes within a range</p>
    </div>
    <hr>
    <div>
       <h3>From Episode</h3>
-      <img src=".github/demos/from-episode.gif" alt="From" width="80%">
+      <img src=".github/demos/from-episode.gif" alt="From" width="90%">
       <p>Download all episodes from a starting point</p>
    </div>
    <hr>
    <div>
-      <h3>Auto-Continue</h3>
-      <img src=".github/demos/auto-continue.gif" alt="Auto-Continue" width="80%">
+      <h3>Auto Continue</h3>
+      <img src=".github/demos/auto-continue.gif" alt="Auto-Continue" width="90%">
       <p>Continue downloading from last tracked episode</p>
    </div>
 </div>
@@ -141,6 +141,8 @@ nyaa-cli --name "one piece" --from 120 --to 130
 nyaa-cli --name "one piece" --from 120 --quality "720"
 nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 ```
+
+---
 
 <details id="usage-patterns">
 <summary><strong>Usage Patterns</strong></summary>

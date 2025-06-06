@@ -7,6 +7,8 @@
    id="svg9"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
   <rect
      x="2.5"
      y="16.506939"
@@ -17,28 +19,28 @@
      stroke="#220033"
      stroke-width="5"
      id="rect1"
-     style="fill:#ddbb44;fill-opacity:1" />
+     style="fill:#cccc55;fill-opacity:1" />
   <polygon
-     points="32,16 16,16 24,4 "
+     points="16,16 24,4 32,16 "
      stroke="#220033"
      stroke-width="5"
      id="polygon1"
      transform="translate(-5.5,0.50693909)" />
   <polygon
-     points="40,16 48,16 56,4 "
+     points="48,16 56,4 40,16 "
      fill="#e0aaff"
      stroke="#220033"
      stroke-width="5"
      id="polygon2"
      transform="translate(-5.5,0.50693909)" />
   <polygon
-     points="28,16 20,16 24,7 "
+     points="20,16 24,7 28,16 "
      fill="#ffb3c6"
      id="polygon3"
      transform="translate(-5.5,0.50693909)"
      style="fill:#eeaa33" />
   <polygon
-     points="48,16 44,16 52,7 "
+     points="44,16 52,7 48,16 "
      fill="#ffb3c6"
      id="polygon4"
      transform="translate(-5.5,0.50693909)"

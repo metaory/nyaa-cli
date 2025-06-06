@@ -5,8 +5,8 @@ set -o errtrace
 
 # ───────────────[ COLORS ]
 for i in {0..7}; do
-    printf -v "c$i" '\033[3%sm' "$i"
-    printf -v "C$i" '\033[1;3%sm' "$i"
+  printf -v "c$i" '\033[3%sm' "$i"
+  printf -v "C$i" '\033[1;3%sm' "$i"
 done
 
 # ───────────────[ DEFAULTS ]
@@ -21,54 +21,54 @@ OUTPUT="output"
 
 # ───────────────[ LOG ]
 function log {
-    local level="${1:-info}"
-    shift
-    local color=""
-    local prefix=""
-    case "$level" in
-    error)
-        color="$C1"
-        prefix="❌"
-        ;;
-    warn)
-        color="$C3"
-        prefix="️🔻"
-        ;;
-    info)
-        color="$C4"
-        prefix="️️🔘"
-        ;;
-    success)
-        color="$C2"
-        prefix="🔹"
-        ;;
-    episode)
-        color="$C5"
-        prefix="🔰"
-        ;;
-    fetch)
-        color="$C3"
-        prefix="🔸"
-        ;;
-    *)
-        color=""
-        prefix=""
-        ;;
-    esac
-    printf '%b%s %s%b\n' "$color" "$prefix" "$@" "$c0" >&2
+  local level="${1:-info}"
+  shift
+  local color=""
+  local prefix=""
+  case "$level" in
+  error)
+    color="$C1"
+    prefix="❌"
+    ;;
+  warn)
+    color="$C3"
+    prefix="️🔻"
+    ;;
+  info)
+    color="$C4"
+    prefix="️️🔘"
+    ;;
+  success)
+    color="$C2"
+    prefix="🔹"
+    ;;
+  episode)
+    color="$C5"
+    prefix="🔰"
+    ;;
+  fetch)
+    color="$C3"
+    prefix="🔸"
+    ;;
+  *)
+    color=""
+    prefix=""
+    ;;
+  esac
+  printf '%b%s %s%b\n' "$color" "$prefix" "$@" "$c0" >&2
 }
 
 function highlight {
-    printf '%b%s%b' "$C7" "$1" "$c0"
+  printf '%b%s%b' "$C7" "$1" "$c0"
 }
 
 # ───────────────[ ERROR HANDLING ]
 function on_error {
-    local exit_code=$?
-    local line_no=$1
-    local cmd=$2
-    log error "ERROR at line $line_no: $cmd (exit $exit_code)"
-    exit "$exit_code"
+  local exit_code=$?
+  local line_no=$1
+  local cmd=$2
+  log error "ERROR at line $line_no: $cmd (exit $exit_code)"
+  exit "$exit_code"
 }
 
 trap 'on_error $LINENO "$BASH_COMMAND"' ERR
@@ -82,15 +82,15 @@ mkdir -p "$STATE_DIR" &>/dev/null
 touch "$STATE_FILE"
 
 function get_last_episode {
-    local name="$1"
-    grep "^$name" "$STATE_FILE" | cut -f2 || true
+  local name="$1"
+  grep "^$name" "$STATE_FILE" | cut -f2 || true
 }
 
 function update_state {
-    local name="$1"
-    local episode="$2"
+  local name="$1"
+  local episode="$2"
 
-    awk -v name="$name" -v ep="$episode" '
+  awk -v name="$name" -v ep="$episode" '
         $1 == name { next }
         { print }
         END { printf "%s\t%s\n", name, ep }
@@ -99,82 +99,82 @@ function update_state {
 
 # ───────────────[ CORE ]
 function get_episodes {
-    local ep="$1"
-    ep=$(printf "%02d" "$ep")
-    local url="${BASE_URL}/?c=${CAT}&s=seeders&o=desc&q=${QUALITY}+${UPLOADER}+${NAME}+${ep}"
-    curl -s "${url}" |
-        pup 'tr.success json{}' |
-        jq '[.[] | {
-            name: .children[1].children[0].title, 
-            size: .children[3].text, 
-            date: .children[4].text, 
-            seeds: .children[5].text, 
+  local ep="$1"
+  ep=$(printf "%02d" "$ep")
+  local url="${BASE_URL}/?c=${CAT}&s=seeders&o=desc&q=${QUALITY}+${UPLOADER}+${NAME}+${ep}"
+  curl -s "${url}" |
+    pup 'tr.success json{}' |
+    jq '[.[] | {
+            name: .children[1].children[0].title,
+            size: .children[3].text,
+            date: .children[4].text,
+            seeds: .children[5].text,
             torrent_url: .children[2].children[0].href
         }]'
 }
 
 # ───────────────[ DOWNLOAD ]
 function normalize_filename {
-    tr '[:upper:]' '[:lower:]' <<<"$1" | tr ' ' '-' | sed 's/[^a-z0-9-]//g'
+  tr '[:upper:]' '[:lower:]' <<<"$1" | tr ' ' '-' | sed 's/[^a-z0-9-]//g'
 }
 
 function download_torrent {
-    local url="${BASE_URL}/${1}"
-    local name="$2"
-    local ep="$3"
+  local url="${BASE_URL}/${1}"
+  local name="$2"
+  local ep="$3"
 
-    local filename
-    filename="$(normalize_filename "${name}")_${ep}.torrent"
-    local output_path="${OUTPUT}/${filename}"
+  local filename
+  filename="$(normalize_filename "${name}")_${ep}.torrent"
+  local output_path="${OUTPUT}/${filename}"
 
-    [[ -e "$output_path" ]] && log warn "Overwriting existing file: $output_path"
+  [[ -e "$output_path" ]] && log warn "Overwriting existing file: $output_path"
 
-    log fetch "Downloading episode $ep..."
-    if curl -sL "$url" -o "${output_path}"; then
-        log success "Saved: $(highlight "$output_path")"
-        update_state "$NAME" "$ep"
-        return 0
-    else
-        log error "Failed to download episode $ep"
-        rm -f "$output_path"
-        return 1
-    fi
+  log fetch "Downloading episode $ep..."
+  if curl -sL "$url" -o "${output_path}"; then
+    log success "Saved: $(highlight "$output_path")"
+    update_state "$NAME" "$ep"
+    return 0
+  else
+    log error "Failed to download episode $ep"
+    rm -f "$output_path"
+    return 1
+  fi
 }
 
 # ───────────────[ ACCUMULATE ]
 function accumulate_episodes {
-    local ep="$1"
-    log episode "Searching for Episode $(highlight "$ep")"
-    local results
-    results=$(get_episodes "$ep")
-    local count
-    count=$(echo "$results" | jq 'length')
-    if [[ "$count" -eq 0 ]]; then
-        log warn "No results found for episode $ep"
-        return
-    fi
-    local top
-    top=$(echo "$results" | jq '.[0]')
-    local torrent_url
-    torrent_url=$(echo "$top" | jq -r '.torrent_url')
-    local episode_name
-    episode_name=$(echo "$top" | jq -r '.name')
-    log success "Found: $(highlight "$episode_name")"
+  local ep="$1"
+  log episode "Searching for Episode $(highlight "$ep")"
+  local results
+  results=$(get_episodes "$ep")
+  local count
+  count=$(echo "$results" | jq 'length')
+  if [[ "$count" -eq 0 ]]; then
+    log warn "No results found for episode $ep"
+    return
+  fi
+  local top
+  top=$(echo "$results" | jq '.[0]')
+  local torrent_url
+  torrent_url=$(echo "$top" | jq -r '.torrent_url')
+  local episode_name
+  episode_name=$(echo "$top" | jq -r '.name')
+  log success "Found: $(highlight "$episode_name")"
 
-    download_torrent "$torrent_url" "$NAME" "$ep"
+  download_torrent "$torrent_url" "$NAME" "$ep"
 
-    if [[ -n "$TO" && $ep -ge $TO ]]; then
-        echo '  --------------'
-        log info "Reached target episode $TO"
-        return
-    fi
-    printf '\n' >&2
-    accumulate_episodes $((ep + 1))
+  if [[ -n "$TO" && $ep -ge $TO ]]; then
+    echo '  --------------'
+    log info "Reached target episode $TO"
+    return
+  fi
+  printf '\n' >&2
+  accumulate_episodes $((ep + 1))
 }
 
 # ───────────────[ CLI ]
 function usage {
-    cat <<EOF
+  cat <<EOF
 
 ${C6}nyaa-cli${c0} :: ${C3}Smart anime torrent fetcher with stateful episode tracking${c0}
 
@@ -204,134 +204,134 @@ EOF
 
 # ───────────────[ VALIDATION ]
 function is_numeric {
-    [[ "$1" =~ ^[0-9]+$ ]]
+  [[ "$1" =~ ^[0-9]+$ ]]
 }
 
 function validate_numeric {
-    local arg="$1"
-    local value="$2"
-    if ! is_numeric "$value"; then
-        log error "$arg must be a number"
-        exit 1
-    fi
+  local arg="$1"
+  local value="$2"
+  if ! is_numeric "$value"; then
+    log error "$arg must be a number"
+    exit 1
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
-    case "$1" in
-    --help | -h)
-        usage
-        exit 0
-        ;;
-    --episode | -e)
-        validate_numeric "--episode" "$2"
-        FROM="$2"
-        TO="$2"
-        shift 2
-        ;;
-    --from | -f)
-        validate_numeric "--from" "$2"
-        FROM="$2"
-        shift 2
-        ;;
-    --to | -t)
-        validate_numeric "--to" "$2"
-        TO="$2"
-        shift 2
-        ;;
-    --quality | -q)
-        QUALITY="$2"
-        shift 2
-        ;;
-    --name | -n)
-        NAME="${2// /+}"
-        NAME="${NAME,,}"
-        shift 2
-        ;;
-    --uploader | -u)
-        UPLOADER="$2"
-        shift 2
-        ;;
-    --output | -o)
-        OUTPUT="$2"
-        shift 2
-        ;;
-    *)
-        log error "unknown arg: $1"
-        usage
-        exit 1
-        ;;
-    esac
+  case "$1" in
+  --help | -h)
+    usage
+    exit 0
+    ;;
+  --episode | -e)
+    validate_numeric "--episode" "$2"
+    FROM="$2"
+    TO="$2"
+    shift 2
+    ;;
+  --from | -f)
+    validate_numeric "--from" "$2"
+    FROM="$2"
+    shift 2
+    ;;
+  --to | -t)
+    validate_numeric "--to" "$2"
+    TO="$2"
+    shift 2
+    ;;
+  --quality | -q)
+    QUALITY="$2"
+    shift 2
+    ;;
+  --name | -n)
+    NAME="${2// /+}"
+    NAME="${NAME,,}"
+    shift 2
+    ;;
+  --uploader | -u)
+    UPLOADER="$2"
+    shift 2
+    ;;
+  --output | -o)
+    OUTPUT="$2"
+    shift 2
+    ;;
+  *)
+    log error "unknown arg: $1"
+    usage
+    exit 1
+    ;;
+  esac
 done
 
 # ───────────────[ VALIDATION ]
 # Ensure Bash 5.0+ is installed
 if [ -z "$BASH_VERSION" ] || [ "${BASH_VERSINFO[0]}" -lt 5 ]; then
-    log error "❌ Bash 5.0+ required. On macOS, install with Homebrew: brew install bash"
-    log error "Then run: /opt/homebrew/bin/bash ./nyaa-cli ..."
-    exit 127
+  log error "❌ Bash 5.0+ required. On macOS, install with Homebrew: brew install bash"
+  log error "Then run: /opt/homebrew/bin/bash ./nyaa-cli ..."
+  exit 127
 fi
 
 # Ensure --name is provided
 if [[ -z "$NAME" ]]; then
-    log error "--name is required"
-    usage
-    exit 1
+  log error "--name is required"
+  usage
+  exit 1
 fi
 
 # --to can only be present if --from is present
 if [[ -n "$TO" && -z "$FROM" ]]; then
-    log error "--to can only be used with --from"
-    usage
-    exit 1
+  log error "--to can only be used with --from"
+  usage
+  exit 1
 fi
 
 # --to must be greater than --from
 if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
-    log error "--to ($TO) must be greater than --from ($FROM)"
-    usage
-    exit 1
+  log error "--to ($TO) must be greater than --from ($FROM)"
+  usage
+  exit 1
 fi
 
 # If --from is not specified, use state file
 if [[ -z "$FROM" ]]; then
-    last_ep=$(get_last_episode "$NAME")
-    if [[ -z "$last_ep" ]]; then
-        log info "No previous episodes found for $NAME, starting from episode 1"
-        FROM=1
-    else
-        log info "Found last episode $last_ep for $NAME in state file"
-        FROM=$((last_ep + 1)) # Start from next episode
-    fi
+  last_ep=$(get_last_episode "$NAME")
+  if [[ -z "$last_ep" ]]; then
+    log info "No previous episodes found for $NAME, starting from episode 1"
+    FROM=1
+  else
+    log info "Found last episode $last_ep for $NAME in state file"
+    FROM=$((last_ep + 1)) # Start from next episode
+  fi
 fi
 
 # ───────────────[ REQUIREMENTS ]
 command -v pup >/dev/null 2>&1 || {
-    log info "installing pup..."
-    command -v go >/dev/null 2>&1 || {
-        log error 'Go not found. Please install Go.'
-        exit 1
-    }
-    go install github.com/ericchiang/pup@latest
-    sudo mv ~/go/bin/pup /usr/local/bin/
+  log info "installing pup..."
+  command -v go >/dev/null 2>&1 || {
+    log error 'Go not found. Please install Go.'
+    exit 1
+  }
+  go install github.com/ericchiang/pup@latest
+  sudo mv ~/go/bin/pup /usr/local/bin/
 }
 
 for cmd in jq curl pup; do
-    command -v "$cmd" >/dev/null || {
-        log error "missing: $cmd"
-        exit 127
-    }
+  command -v "$cmd" >/dev/null || {
+    log error "missing: $cmd"
+    exit 127
+  }
 done
 
 # ───────────────[ UI ]
-logheader() {
-    printf '\n\033[1;36m╭─[ %s ]────────────────╴───╶╴──╶╴╴\033[0m\n' "NYAA CLI"
-    for var; do
-        local value="${!var}"
-        local label="${var,,}"
-        label="${label^}"
-        printf '\033[1;36m│\033[0m \033[1;97m%-12s\033[0m: \033[1;33m%s\033[0m\n' "$label" "$value"
-    done
-    printf '\033[1;36m╰─────────────────────────────────╴─╴─╴╴╴╴\033[0m\n\n'
+function logheader {
+  printf '\n\033[1;36m╭─[ %s ]────────────────╴───╶╴──╶╴╴\033[0m\n' "NYAA CLI"
+  for var; do
+    local value="${!var}"
+    local label="${var,,}"
+    label="${label^}"
+    printf '\033[1;36m│\033[0m \033[1;97m%-12s\033[0m: \033[1;33m%s\033[0m\n' "$label" "$value"
+  done
+  printf '\033[1;36m╰─────────────────────────────────╴─╴─╴╴╴╴\033[0m\n\n'
 }
 
 # ───────────────[ DRIVER ]
@@ -342,5 +342,3 @@ mkdir -p "$OUTPUT" &>/dev/null
 log info "Starting download from episode $(highlight "$FROM")${TO:+ to $(highlight "$TO")}"
 printf '\n' >&2
 accumulate_episodes "$FROM"
-
-###
