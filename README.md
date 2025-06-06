@@ -5,36 +5,16 @@
 </div>
 
 <p align="center">
-  <a href="#requirements">Requirements</a> |
   <a href="#installation">Installation</a> |
   <a href="#usage">Usage</a> |
   <a href="#usage-patterns">Patterns</a> |
   <a href="#example-workflow">Workflow</a>
 </p>
 
-
-```dart
-nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
-
-Options:
-  -n, --name      Anime name (required)
-  -e, --episode   Download a single episode
-  -f, --from      Starting episode (exclusive with -e)
-  -t, --to        Ending episode (optional, with -f)
-  -q, --quality   Video quality (default: 720)
-  -u, --uploader  Uploader filter (e.g. Erai, SubsPlease)
-  -o, --output    Output directory (default: ./output)
-  -h, --help      Show this help message
-
-Notes:
-  • -f and -e cannot be used together
-  • -f without -t downloads all episodes from start
-  • Not specifying -u picks highest seeder
-```
-
-
 ---
 
+<details>
+<summary><strong>Demos</strong></summary>
 <div align="center">
    <div width="40%">
       <h3>Single Episode</h3>
@@ -60,6 +40,7 @@ Notes:
       <p>Continue downloading from last tracked episode</p>
    </div>
 </div>
+</details>
 
 ---
 
@@ -117,6 +98,27 @@ chmod +x nyaa-cli
 
 # symlink the script to somewhere in $PATH
 sudo ln -sf "$(pwd)/nyaa-cli" /usr/local/bin/nyaa-cli
+```
+
+## Usage
+
+```dart
+nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
+
+Options:
+  -n, --name      Anime name (required)
+  -e, --episode   Download a single episode
+  -f, --from      Starting episode (exclusive with -e)
+  -t, --to        Ending episode (optional, with -f)
+  -q, --quality   Video quality (default: 720)
+  -u, --uploader  Uploader filter (e.g. Erai, SubsPlease)
+  -o, --output    Output directory (default: ./output)
+  -h, --help      Show this help message
+
+Notes:
+  • -f and -e cannot be used together
+  • -f without -t downloads all episodes from start
+  • Not specifying -u picks highest seeder
 ```
 
 
