@@ -19,7 +19,7 @@
 - `jq`
 - `curl`
 - `pup` _(requires Go for first-time installation)_
-- `Go` _(only needed for first-time installation of `pup`)_
+- `Go` _(needed for first-time installation of `pup`)_
 
 <details>
 <summary><strong>Bash 5+ (macOS users only)</strong></summary>
