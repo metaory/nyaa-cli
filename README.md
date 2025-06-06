@@ -4,37 +4,64 @@
     <h4>Smart anime torrent fetcher with stateful episode tracking</h4>
 </div>
 
+<p align="center">
+  <a href="#requirements">Requirements</a> |
+  <a href="#installation">Installation</a> |
+  <a href="#usage">Usage</a> |
+  <a href="#usage-patterns">Patterns</a> |
+  <a href="#example-workflow">Workflow</a>
+</p>
+
+
+```dart
+nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
+
+Options:
+  -n, --name      Anime name (required)
+  -e, --episode   Download a single episode
+  -f, --from      Starting episode (exclusive with -e)
+  -t, --to        Ending episode (optional, with -f)
+  -q, --quality   Video quality (default: 720)
+  -u, --uploader  Uploader filter (e.g. Erai, SubsPlease)
+  -o, --output    Output directory (default: ./output)
+  -h, --help      Show this help message
+
+Notes:
+  • -f and -e cannot be used together
+  • -f without -t downloads all episodes from start
+  • Not specifying -u picks highest seeder
+```
+
+
+---
+
 <div align="center">
    <div width="40%">
-      <h4>Single Episode</h4>
-      <img src=".github/demos/single-episode.gif" alt="Single Episode" width="600">
+      <h3>Single Episode</h3>
+      <img src=".github/demos/single-episode.gif" alt="Single Episode" width="80%">
       <p>Download a specific episode by number</p>
    </div>
+   <hr>
    <div width="40%">
-      <h4>Episode Range</h4>
-      <img src=".github/demos/range.gif" alt="Episode Range" width="600">
+      <h3>Episode Range</h3>
+      <img src=".github/demos/range.gif" alt="Episode Range" width="80%">
       <p>Download multiple episodes within a range</p>
    </div>
+   <hr>
    <div>
-      <h4>From Episode</h4>
-      <img src=".github/demos/from-episode.gif" alt="From" width="600">
+      <h3>From Episode</h3>
+      <img src=".github/demos/from-episode.gif" alt="From" width="80%">
       <p>Download all episodes from a starting point</p>
    </div>
+   <hr>
    <div>
-      <h4>Auto-Continue</h4>
-      <img src=".github/demos/auto-continue.gif" alt="Auto-Continue" width="600">
+      <h3>Auto-Continue</h3>
+      <img src=".github/demos/auto-continue.gif" alt="Auto-Continue" width="80%">
       <p>Continue downloading from last tracked episode</p>
    </div>
 </div>
 
 ---
-
-<p align="center">
-  <a href="#requirements">Requirements</a> |
-  <a href="#usage">Usage</a> |
-  <a href="#state">State</a>
-</p>
-
 
 ## Requirements
 
@@ -43,22 +70,6 @@
 - `curl`
 - `pup` _(requires Go for first-time installation)_
 - `Go` _(only needed for first-time installation of `pup`)_
-
----
-
-## Installation
-
-```sh
-# clone the repository
-git clone https://github.com/metaory/nyaa-cli.git
-cd nyaa-cli
-
-# make the script executable
-chmod +x nyaa-cli
-
-# symlink the script to somewhere in $PATH
-sudo ln -sf "$(pwd)/nyaa-cli" /usr/local/bin/nyaa-cli
-```
 
 <details>
 <summary><strong>Bash 5+ (macOS users only)</strong></summary>
@@ -92,26 +103,22 @@ It should say `5.x` or later
 
 </details>
 
-## Usage
+---
 
-```dart
-nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
+## Installation
 
-Options:
-  -n, --name      Anime name (required)
-  -e, --episode   Download a single episode
-  -f, --from      Starting episode (exclusive with -e)
-  -t, --to        Ending episode (optional, with -f)
-  -q, --quality   Video quality (default: 720)
-  -u, --uploader  Uploader filter (e.g. Erai, SubsPlease)
-  -o, --output    Output directory (default: ./output)
-  -h, --help      Show this help message
+```sh
+# clone the repository
+git clone https://github.com/metaory/nyaa-cli.git
+cd nyaa-cli
 
-Notes:
-  • -f and -e cannot be used together
-  • -f without -t downloads all episodes from start
-  • Not specifying -u picks highest seeder
+# make the script executable
+chmod +x nyaa-cli
+
+# symlink the script to somewhere in $PATH
+sudo ln -sf "$(pwd)/nyaa-cli" /usr/local/bin/nyaa-cli
 ```
+
 
 ### Examples
 
@@ -133,7 +140,8 @@ nyaa-cli --name "one piece" --from 120 --quality "720"
 nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 ```
 
-### Usage Patterns
+<details id="usage-patterns">
+<summary><strong>Usage Patterns</strong></summary>
 
 The script supports four main usage patterns:
 
@@ -156,6 +164,9 @@ The script supports four main usage patterns:
    - Downloads episodes within a specific range
    - `--to` must be greater than `--from`
    - Example: `--from 120 --to 130`
+</details>
+
+---
 
 <details>
 <summary><strong>State Management</strong></summary>
@@ -178,7 +189,9 @@ The state is automatically updated whenever an episode is downloaded, and is use
 
 </details>
 
-<details>
+---
+
+<details id="example-workflow">
 <summary><strong>Example Workflow</strong></summary>
 
 You can use `nyaa-cli` to automate your anime downloads with a torrent client that supports directory watching. For example, with **rtorrent**, you can configure it to watch a directory for new `.torrent` files. When a torrent file is placed there, rtorrent will automatically start downloading it.
