@@ -26,7 +26,7 @@
 
 This script requires <strong>Bash 5.0 or later</strong>.
 
-On macOS, the default <code>/bin/bash</code> is too old.  
+On macOS, the default <code>/bin/bash</code> is too old.
 Install the latest Bash with Homebrew:
 
 ```sh
@@ -34,21 +34,28 @@ brew install bash
 ```
 
 Then, either:
+
 - Run the script with the full path:
+
   ```sh
   /opt/homebrew/bin/bash ./nyaa-cli ...
   ```
+
 - Or, add Homebrew Bash to your PATH (Apple Silicon):
+
   ```sh
   echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
   source ~/.zshrc
   ```
+
   (For Intel Macs, use <code>/usr/local/bin</code>)
 
 Check your Bash version:
+
 ```sh
 bash --version
 ```
+
 It should say `5.x` or later
 
 </details>
@@ -74,8 +81,14 @@ sudo ln -sf "$(pwd)/nyaa-cli" /usr/local/bin/nyaa-cli
 ```dart
 nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
 
+Usage:
+  nyaa-cli                                      # Smart mode: update all anime
+  nyaa-cli -q 480                               # Smart mode with quality override
+  nyaa-cli -n "one piece" -e 120                # Normal mode: specific episode
+  nyaa-cli -n "one piece" -f 120 [-t 130]       # Normal mode: episode range
+
 Options:
-  -n, --name      Anime name (required)
+  -n, --name      Anime name (omit for smart mode)
   -e, --episode   Download a single episode
   -f, --from      Starting episode (exclusive with -e)
   -t, --to        Ending episode (optional, with -f)
@@ -84,16 +97,30 @@ Options:
   -o, --output    Output directory (default: ./output)
   -h, --help      Show this help message
 
+Smart Mode:
+  • Omit --name to process all anime from state file
+  • Uses stored preferences per anime (quality, uploader, output)
+  • CLI options override stored preferences for this run
+  • nyaa-cli --quality 1080 updates all anime with 1080p override
+
 Notes:
   • -f and -e cannot be used together
   • -f without -t downloads all episodes from start
   • Not specifying -u picks highest seeder
 ```
 
-
 ### Examples
 
 ```bash
+# Smart mode - update all anime from state file
+nyaa-cli
+
+# Smart mode with quality override
+nyaa-cli --quality "1080"
+
+# Smart mode with uploader preference
+nyaa-cli --uploader "Erai"
+
 # Basic usage - continues from last downloaded episode
 nyaa-cli --name "one piece"
 
@@ -120,6 +147,70 @@ nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 
 ---
 
+<details id="usage-patterns">
+<summary><strong>Usage Patterns</strong></summary>
+
+The script supports five main usage patterns:
+
+1. **Smart Mode** (no `--name` provided)
+
+   - Updates all anime from the state file automatically
+   - Uses stored preferences (quality, uploader) per anime
+   - CLI options override stored preferences for this run
+   - Example: `nyaa-cli` or `nyaa-cli --quality 1080`
+
+2. **Continue from Last Episode** (`--name` only)
+
+   - Automatically continues from the last downloaded episode
+   - If no previous episodes found, starts from episode 1
+   - Uses state file to track progress
+
+3. **Single Episode** (`--episode`)
+
+   - Downloads a specific episode
+   - Cannot be used with `--from` or `--to`
+   - Example: `--episode 120`
+
+4. **From Episode to Present** (`--from` without `--to`)
+
+   - Downloads all available episodes from the starting point
+   - Continues until no more episodes are found
+   - Example: `--from 120`
+
+5. **Episode Range** (`--from` and `--to`)
+   - Downloads episodes within a specific range
+   - `--to` must be greater than `--from`
+   - Example: `--from 120 --to 130`
+   </details>
+
+---
+
+<details>
+<summary><strong>State Management</strong></summary>
+
+The script maintains a state file at `~/.local/state/nyaa-cli/progress` to track the last downloaded episode for each anime. The state file is a TSV (Tab-Separated Values) file where:
+
+- First column: Normalized anime name
+- Second column: Last downloaded episode number
+
+Example state file:
+
+```
+one+piece 1278
+solo+leveling 18
+witch+watch 21 quality:480
+```
+
+The state is automatically updated whenever an episode is downloaded, and is used to:
+
+- Continue from the last downloaded episode when no episode is specified
+- Track progress across multiple runs
+- Start from episode 1 for new anime
+
+</details>
+
+---
+
 <details>
 <summary><strong>More Demos</strong></summary>
 <div align="center">
@@ -140,58 +231,12 @@ nyaa-cli --name "one piece" --from 120 --uploader "Erai"
       <img src=".github/demos/from-episode.gif" alt="From" width="90%">
       <p>Download all episodes from a starting point</p>
    </div>
+  <div>
+    <h3>Smart Mode</h3>
+    <img src=".github/demos/smart-mode.gif" alt="Smart Mode">
+    <p>Download all anime episodes with stored preferences</p>
+  </div>
 </div>
-</details>
-
----
-
-<details id="usage-patterns">
-<summary><strong>Usage Patterns</strong></summary>
-
-The script supports four main usage patterns:
-
-1. **Continue from Last Episode** (`--name` only)
-   - Automatically continues from the last downloaded episode
-   - If no previous episodes found, starts from episode 1
-   - Uses state file to track progress
-
-2. **Single Episode** (`--episode`)
-   - Downloads a specific episode
-   - Cannot be used with `--from` or `--to`
-   - Example: `--episode 120`
-
-3. **From Episode to Present** (`--from` without `--to`)
-   - Downloads all available episodes from the starting point
-   - Continues until no more episodes are found
-   - Example: `--from 120`
-
-4. **Episode Range** (`--from` and `--to`)
-   - Downloads episodes within a specific range
-   - `--to` must be greater than `--from`
-   - Example: `--from 120 --to 130`
-</details>
-
----
-
-<details>
-<summary><strong>State Management</strong></summary>
-
-The script maintains a state file at `~/.local/state/nyaa-cli/progress` to track the last downloaded episode for each anime. The state file is a TSV (Tab-Separated Values) file where:
-
-- First column: Normalized anime name
-- Second column: Last downloaded episode number
-
-Example state file:
-```
-one+piece	1278
-solo+leveling	18
-```
-
-The state is automatically updated whenever an episode is downloaded, and is used to:
-- Continue from the last downloaded episode when no episode is specified
-- Track progress across multiple runs
-- Start from episode 1 for new anime
-
 </details>
 
 ---
@@ -206,31 +251,35 @@ A typical workflow:
 1. Configure your torrent client (e.g., rtorrent) to watch a directory (e.g., `~/watch/torrents`).
 
 2. Create a script to download new episodes (e.g., `~/bin/update-anime.sh`):
+
    ```sh
    #!/bin/bash
-   
+
    # Update One Piece
    nyaa-cli --name "one piece" --output ~/watch/torrents
-   
+
    # Update Solo Leveling
    nyaa-cli --name "solo leveling" --output ~/watch/torrents
    ```
 
 3. Make the script executable:
+
    ```sh
    chmod +x ~/bin/update-anime.sh
    ```
 
 4. Add a weekly cronjob to run the script (e.g., every Sunday at 2 AM):
+
    ```sh
    # Edit crontab
    crontab -e
-   
+
    # Add this line
    0 2 * * 0 ~/bin/update-anime.sh
    ```
 
 The script will:
+
 - Use the state file to automatically continue from the last downloaded episode
 - Download new episodes if available
 - Save torrent files with normalized filenames (lowercase, no spaces, no special characters)
@@ -243,4 +292,5 @@ Many other torrent clients also support directory watching for automation.
 ---
 
 ## License
+
 [MIT](LICENSE)

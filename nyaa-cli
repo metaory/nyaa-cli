@@ -3,6 +3,8 @@
 set -euo pipefail
 set -o errtrace
 
+# v1.2
+
 # ───────────────[ COLORS ]
 for i in {0..7}; do
   printf -v "c$i" '\033[3%sm' "$i"
@@ -18,6 +20,10 @@ TO=
 NAME=
 UPLOADER=
 OUTPUT="output"
+
+# ───────────────[ STATE ]
+SMART_MODE=""
+OVERRIDES=""
 
 # ───────────────[ LOG ]
 function log {
@@ -86,15 +92,32 @@ function get_last_episode {
   grep "^$name" "$STATE_FILE" | cut -f2 || true
 }
 
-function update_state {
+function get_stored_param {
   local name="$1"
-  local episode="$2"
+  local param="$2"
+  grep "^$name" "$STATE_FILE" 2>/dev/null | cut -f3- | tr '\t' '\n' | grep "^$param:" | cut -d: -f2- || true
+}
 
-  awk -v name="$name" -v ep="$episode" '
-        $1 == name { next }
-        { print }
-        END { printf "%s\t%s\n", name, ep }
-    ' "$STATE_FILE" >"$STATE_FILE.new" && mv "$STATE_FILE.new" "$STATE_FILE"
+function has_override { [[ "$OVERRIDES" == *"$1"* ]]; }
+
+function load_stored_params {
+  local name="$1"
+  has_override "quality" || QUALITY=$(get_stored_param "$name" "quality" || echo "720")
+  has_override "uploader" || UPLOADER=$(get_stored_param "$name" "uploader")
+}
+
+function update_state {
+  local name="$1" episode="$2" params=""
+
+  # Store only quality and uploader preferences
+  params="$params\tquality:$QUALITY"
+  [[ -n "$UPLOADER" ]] && params="$params\tuploader:$UPLOADER"
+
+  awk -v name="$name" -v ep="$episode" -v params="$params" '
+    $1 == name { next }
+    { print }
+    END { printf "%s\t%s%s\n", name, ep, params }
+  ' "$STATE_FILE" >"$STATE_FILE.new" && mv "$STATE_FILE.new" "$STATE_FILE"
 }
 
 # ───────────────[ CORE ]
@@ -179,25 +202,31 @@ function usage {
 ${C6}nyaa-cli${c0} :: ${C3}Smart anime torrent fetcher with stateful episode tracking${c0}
 
 ${C5}Usage:${c0}
-  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -e 120${c0}
-  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -f 120 [-t 130]${c0}
-  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -e 120 -u "Erai"${c0}
-  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -f 120 -q "720" -o "downloads"${c0}
+  ${C2}nyaa-cli                                   ${C4}# Smart mode: update all anime
+  ${C2}nyaa-cli${c0} ${C3}-q 480                            ${C4}# Smart mode with quality override
+  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -e 120             ${C4}# Normal mode: specific episode
+  ${C2}nyaa-cli${c0} ${C3}-n "one piece" -f 120 [-t 130]    ${C4}# Normal mode: episode range
 
 ${C5}Options:${c0}
-  ${C2}-n, --name${c0}      Anime name (required)
-  ${C2}-e, --episode${c0}   Download a single episode
-  ${C2}-f, --from${c0}      Starting episode (exclusive with -e)
-  ${C2}-t, --to${c0}        Ending episode (optional, with -f)
-  ${C2}-q, --quality${c0}   Video quality (default: ${C3}720${c0})
-  ${C2}-u, --uploader${c0}  Uploader filter (e.g. ${C3}Erai${c0}, ${C3}SubsPlease${c0})
-  ${C2}-o, --output${c0}    Output directory (default: ${C3}./output${c0})
-  ${C2}-h, --help${c0}      Show this help message
+  ${C2}-n, --name${c4}      Anime name (omit for smart mode)
+  ${C2}-e, --episode${c4}   Download a single episode
+  ${C2}-f, --from${c4}      Starting episode (exclusive with -e)
+  ${C2}-t, --to${c4}        Ending episode (optional, with -f)
+  ${C2}-q, --quality${c4}   Video quality (default: ${C3}720${c0})
+  ${C2}-u, --uploader${c4}  Uploader filter (e.g. ${C3}Erai${c0}, ${C3}SubsPlease${c0})
+  ${C2}-o, --output${c4}    Output directory (default: ${C3}./output${c0})
+  ${C2}-h, --help${c4}      Show this help message
 
-${C5}Notes:${c0}
-  • ${C2}-f${c0} and ${C2}-e${c0} cannot be used together
-  • ${C2}-f${c0} without ${C2}-t${c0} downloads all episodes from start
-  • Not specifying ${C2}-u${c0} picks highest seeder
+${C5}Smart Mode:${c4}
+  • Omit ${C2}--name${c4} to process all anime from state file
+  • Uses stored preferences per anime (quality, uploader, output)
+  • CLI options override stored preferences for this run
+  • ${C2}nyaa-cli --quality 1080${c4} updates all anime with 1080p override
+
+${C5}Notes:${c4}
+  • ${C2}-f${c4} and ${C2}-e${c4} cannot be used together
+  • ${C2}-f${c4} without ${C2}-t${c4} downloads all episodes from start
+  • Not specifying ${C2}-u${c4} picks highest seeder
 
 EOF
 }
@@ -216,52 +245,58 @@ function validate_numeric {
   fi
 }
 
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-  --help | -h)
-    usage
-    exit 0
-    ;;
-  --episode | -e)
-    validate_numeric "--episode" "$2"
-    FROM="$2"
-    TO="$2"
-    shift 2
-    ;;
-  --from | -f)
-    validate_numeric "--from" "$2"
-    FROM="$2"
-    shift 2
-    ;;
-  --to | -t)
-    validate_numeric "--to" "$2"
-    TO="$2"
-    shift 2
-    ;;
-  --quality | -q)
-    QUALITY="$2"
-    shift 2
-    ;;
-  --name | -n)
-    NAME="${2// /+}"
-    NAME="${NAME,,}"
-    shift 2
-    ;;
-  --uploader | -u)
-    UPLOADER="$2"
-    shift 2
-    ;;
-  --output | -o)
-    OUTPUT="$2"
-    shift 2
-    ;;
-  *)
-    log error "unknown arg: $1"
-    usage
-    exit 1
-    ;;
-  esac
-done
+function parse_args {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --help | -h)
+      usage
+      exit 0
+      ;;
+    --episode | -e)
+      validate_numeric "--episode" "$2"
+      FROM="$2"
+      TO="$2"
+      shift 2
+      ;;
+    --from | -f)
+      validate_numeric "--from" "$2"
+      FROM="$2"
+      shift 2
+      ;;
+    --to | -t)
+      validate_numeric "--to" "$2"
+      TO="$2"
+      shift 2
+      ;;
+    --quality | -q)
+      QUALITY="$2"
+      OVERRIDES="$OVERRIDES quality"
+      shift 2
+      ;;
+    --name | -n)
+      NAME="${2// /+}"
+      NAME="${NAME,,}"
+      shift 2
+      ;;
+    --uploader | -u)
+      UPLOADER="$2"
+      OVERRIDES="$OVERRIDES uploader"
+      shift 2
+      ;;
+    --output | -o)
+      OUTPUT="$2"
+      shift 2
+      ;;
+    *)
+      log error "unknown arg: $1"
+      usage
+      exit 1
+      ;;
+    esac
+  done
+}
+
+parse_args "$@"
 
 # ───────────────[ VALIDATION ]
 # Ensure Bash 5.0+ is installed
@@ -271,38 +306,43 @@ if [ -z "$BASH_VERSION" ] || [ "${BASH_VERSINFO[0]}" -lt 5 ]; then
   exit 127
 fi
 
-# Ensure --name is provided
-if [[ -z "$NAME" ]]; then
-  log error "--name is required"
-  usage
-  exit 1
-fi
+function detect_mode {
+  [[ -z "$NAME" ]] && SMART_MODE="true"
+}
 
-# --to can only be present if --from is present
-if [[ -n "$TO" && -z "$FROM" ]]; then
-  log error "--to can only be used with --from"
-  usage
-  exit 1
-fi
+function validate_normal_mode {
+  [[ -n "$SMART_MODE" ]] && return
 
-# --to must be greater than --from
-if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
-  log error "--to ($TO) must be greater than --from ($FROM)"
-  usage
-  exit 1
-fi
-
-# If --from is not specified, use state file
-if [[ -z "$FROM" ]]; then
-  last_ep=$(get_last_episode "$NAME")
-  if [[ -z "$last_ep" ]]; then
-    log info "No previous episodes found for $NAME, starting from episode 1"
-    FROM=1
-  else
-    log info "Found last episode $last_ep for $NAME in state file"
-    FROM=$((last_ep + 1)) # Start from next episode
+  if [[ -n "$TO" && -z "$FROM" ]]; then
+    log error "--to can only be used with --from"
+    usage
+    exit 1
   fi
-fi
+
+  if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
+    log error "--to ($TO) must be greater than --from ($FROM)"
+    usage
+    exit 1
+  fi
+
+  # Load stored parameters for this anime (respects CLI overrides)
+  load_stored_params "$NAME"
+
+  if [[ -z "$FROM" ]]; then
+    local last_ep
+    last_ep=$(get_last_episode "$NAME")
+    if [[ -z "$last_ep" ]]; then
+      log info "No previous episodes found for $NAME, starting from episode 1"
+      FROM=1
+    else
+      log info "Found last episode $last_ep for $NAME in state file"
+      FROM=$((last_ep + 1))
+    fi
+  fi
+}
+
+detect_mode || true
+validate_normal_mode
 
 # ───────────────[ REQUIREMENTS ]
 command -v pup >/dev/null 2>&1 || {
@@ -322,6 +362,33 @@ for cmd in jq curl pup; do
   }
 done
 
+# ───────────────[ SMART MODE ]
+function smart_mode_execute {
+  [[ ! -s "$STATE_FILE" ]] && {
+    log info "No anime to process"
+    return
+  }
+
+  local processed=0 orig_quality="$QUALITY" orig_uploader="$UPLOADER"
+
+  while IFS=$'\t' read -r name episode rest; do
+    [[ -z "$name" ]] && continue
+
+    log info "Processing $(highlight "$name") from episode $((episode + 1))"
+
+    QUALITY="$orig_quality" UPLOADER="$orig_uploader"
+    load_stored_params "$name"
+
+    NAME="$name" FROM=$((episode + 1)) TO=""
+    mkdir -p "$OUTPUT" &>/dev/null
+
+    accumulate_episodes "$FROM" && ((processed++))
+    printf '\n' >&2
+  done <"$STATE_FILE"
+
+  log success "Smart mode completed: $processed anime processed"
+}
+
 # ───────────────[ UI ]
 function logheader {
   printf '\n\033[1;36m╭─[ %s ]────────────────╴───╶╴──╶╴╴\033[0m\n' "NYAA CLI"
@@ -334,11 +401,18 @@ function logheader {
   printf '\033[1;36m╰─────────────────────────────────╴─╴─╴╴╴╴\033[0m\n\n'
 }
 
+function process_normal_mode {
+  logheader QUALITY UPLOADER NAME FROM TO OUTPUT
+  mkdir -p "$OUTPUT" &>/dev/null
+  log info "Starting download from episode $(highlight "$FROM")${TO:+ to $(highlight "$TO")}"
+  printf '\n' >&2
+  accumulate_episodes "$FROM"
+}
+
+function process_smart_mode {
+  log info "Smart mode: processing all anime${OVERRIDES:+ with overrides: $OVERRIDES}"
+  smart_mode_execute
+}
+
 # ───────────────[ DRIVER ]
-logheader QUALITY UPLOADER NAME FROM TO OUTPUT
-
-mkdir -p "$OUTPUT" &>/dev/null
-
-log info "Starting download from episode $(highlight "$FROM")${TO:+ to $(highlight "$TO")}"
-printf '\n' >&2
-accumulate_episodes "$FROM"
+[[ -n "$SMART_MODE" ]] && process_smart_mode || process_normal_mode

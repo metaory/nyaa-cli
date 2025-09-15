@@ -1,122 +1,96 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   viewBox="0 0 55.07169 60.506939"
-   width="110.14338"
-   height="121.01388"
+   viewBox="0 0 55 60"
+   width="110"
+   height="121"
    version="1.1"
-   id="svg9"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1" />
   <rect
-     x="2.5"
-     y="16.506939"
+     x="4"
+     y="17"
      width="48"
      height="40"
      rx="16"
-     fill="#e0aaff"
-     stroke="#220033"
-     stroke-width="5"
-     id="rect1"
-     style="fill:#cccc55;fill-opacity:1" />
+     fill="#ee99aa"
+     stroke="#441177"
+     stroke-width="3"/>
   <polygon
      points="16,16 24,4 32,16 "
-     stroke="#220033"
-     stroke-width="5"
-     id="polygon1"
-     transform="translate(-5.5,0.50693909)" />
+     stroke="#441177"
+     stroke-width="3"
+     transform="translate(-2.2,0.5)" />
   <polygon
      points="48,16 56,4 40,16 "
-     fill="#e0aaff"
-     stroke="#220033"
-     stroke-width="5"
-     id="polygon2"
-     transform="translate(-5.5,0.50693909)" />
+     fill="#eeaaff"
+     stroke="#441177"
+     stroke-width="3"
+     transform="translate(-5.5,0.5)" />
   <polygon
-     points="20,16 24,7 28,16 "
-     fill="#ffb3c6"
-     id="polygon3"
-     transform="translate(-5.5,0.50693909)"
-     style="fill:#eeaa33" />
+     points="18,15 24,6 30,15 "
+     fill="#ee99aa"
+     transform="translate(-2.5,0.7)"
+     />
   <polygon
-     points="44,16 52,7 48,16 "
-     fill="#ffb3c6"
-     id="polygon4"
-     transform="translate(-5.5,0.50693909)"
-     style="fill:#eeaa33" />
+     points="43,15 53,7 48,15 "
+     fill="#ee99aa"
+     transform="translate(-5.5,0.5)" />
   <path
-     d="m 50.5,48.506939 q 6,6 -2,10"
-     stroke="#220033"
+     d="m 50.5,48.5 q 6,6 -2,10"
+     stroke="#441177"
      stroke-width="4"
      fill="none"
-     stroke-linecap="round"
-     id="path4" />
+     stroke-linecap="round" />
   <path
-     d="m 50.5,48.506939 q 4,6 -1,8"
-     stroke="#e0aaff"
-     stroke-width="2"
+     d="m 49,44.5 q 9,11 -1,14"
+     stroke="#ee99aa"
+     stroke-width="2.4"
      fill="none"
-     stroke-linecap="round"
-     id="path5"
-     style="stroke:#eeaa33" />
+     stroke-linecap="round" />
   <ellipse
-     cx="26.5"
-     cy="41.819218"
+     cx="26"
+     cy="41"
      rx="1.2"
-     ry="0.80000001"
-     fill="#ffb3c6"
-     stroke="#220033"
+     ry="0.8"
+     fill="#cc44bb"
+     stroke="#441177"
      stroke-width="1"
-     id="ellipse5"
-     style="fill:#cc44bb" />
+     />
   <path
-     d="m 24,44.506939 q 2.5,2 5,0"
-     stroke="#220033"
+     d="m 24,44.5 q 2.5,2 5,0"
+     stroke="#441177"
+     stroke-width="2.2"
+     fill="none"
+     stroke-linecap="round" />
+  <path
+     d="m 19.5,43.5 q -3,1 -5,0"
+     stroke="#441177"
      stroke-width="2"
      fill="none"
-     stroke-linecap="round"
-     id="path6"
-     style="stroke-width:2.5;stroke-dasharray:none" />
+     stroke-linecap="round" />
   <path
-     d="m 19.5,43.506939 q -3,1 -5,0"
-     stroke="#220033"
-     stroke-width="1.2"
+     d="m 33.5,43.5 q 3,1 5,0"
+     stroke="#441177"
+     stroke-width="2"
      fill="none"
-     stroke-linecap="round"
-     id="path7"
-     style="stroke-width:2;stroke-dasharray:none" />
-  <path
-     d="m 33.5,43.506939 q 3,1 5,0"
-     stroke="#220033"
-     stroke-width="1.2"
-     fill="none"
-     stroke-linecap="round"
-     id="path8"
-     style="stroke-width:2;stroke-dasharray:none" />
+     stroke-linecap="round" />
   <ellipse
-     cx="16.5"
-     cy="46.506939"
+     cx="17"
+     cy="47"
      rx="2.2"
-     ry="0.80000001"
-     fill="#ffb3c6"
-     opacity="0.9"
-     id="ellipse8"
-     style="fill:#ff4488" />
+     ry="0.8"
+     fill="#ff4488"
+     opacity="0.9" />
   <ellipse
-     cx="36.5"
-     cy="46.506939"
+     cx="36"
+     cy="47"
      rx="2.2"
-     ry="0.80000001"
-     fill="#ffb3c6"
-     opacity="0.9"
-     id="ellipse9"
-     style="fill:#ff4488" />
+     ry="0.8"
+     fill="#ff4488"
+     opacity="0.9" />
   <path
      d="m 9.078318,28.157703 q 0,-2.645035 2.645035,-2.645035 2.645035,0 2.645035,2.645035 0,2.645035 -2.645035,5.290071 -2.645035,-2.645036 -2.645035,-5.290071 z"
-     fill="#ff5fa2"
-     stroke="#220033"
-     stroke-width="1.05801"
-     id="path9"
-     style="fill:#33ddbb" />
+     fill="#33ddbb"
+     stroke="#441177"
+     stroke-width="1" />
 </svg>
