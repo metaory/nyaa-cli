@@ -11,6 +11,14 @@ for i in {0..7}; do
   printf -v "C$i" '\033[1;3%sm' "$i"
 done
 
+# ───────────────[ VALIDATION ]
+# Ensure Bash 5.0+ is installed
+if [ -z "$BASH_VERSION" ] || [ "${BASH_VERSINFO[0]}" -lt 5 ]; then
+  log error "❌ Bash 5.0+ required. On macOS, install with Homebrew: brew install bash"
+  log error "Then run: /opt/homebrew/bin/bash ./nyaa-cli ..."
+  exit 127
+fi
+
 # ───────────────[ DEFAULTS ]
 BASE_URL="https://nyaa.si"
 QUALITY="720"
@@ -20,6 +28,10 @@ TO=
 NAME=
 UPLOADER=
 OUTPUT="output"
+
+# ───────────────[ STATE ]
+STATE_DIR="$HOME/.local/state/nyaa-cli"
+STATE_FILE="$STATE_DIR/progress"
 
 # ───────────────[ STATE ]
 SMART_MODE=""
@@ -79,13 +91,6 @@ function on_error {
 
 trap 'on_error $LINENO "$BASH_COMMAND"' ERR
 trap 'log warn "Interrupted"; exit 1' INT
-
-# ───────────────[ STATE ]
-STATE_DIR="$HOME/.local/state/nyaa-cli"
-STATE_FILE="$STATE_DIR/progress"
-
-mkdir -p "$STATE_DIR" &>/dev/null
-touch "$STATE_FILE"
 
 function get_last_episode {
   local name="$1"
@@ -297,16 +302,6 @@ function parse_args {
   done
 }
 
-parse_args "$@"
-
-# ───────────────[ VALIDATION ]
-# Ensure Bash 5.0+ is installed
-if [ -z "$BASH_VERSION" ] || [ "${BASH_VERSINFO[0]}" -lt 5 ]; then
-  log error "❌ Bash 5.0+ required. On macOS, install with Homebrew: brew install bash"
-  log error "Then run: /opt/homebrew/bin/bash ./nyaa-cli ..."
-  exit 127
-fi
-
 function detect_mode {
   [[ -z "$NAME" ]] && SMART_MODE="true"
 }
@@ -341,27 +336,6 @@ function validate_normal_mode {
     fi
   fi
 }
-
-detect_mode || true
-validate_normal_mode
-
-# ───────────────[ REQUIREMENTS ]
-command -v pup >/dev/null 2>&1 || {
-  log info "installing pup..."
-  command -v go >/dev/null 2>&1 || {
-    log error 'Go not found. Please install Go.'
-    exit 1
-  }
-  go install github.com/ericchiang/pup@latest
-  sudo mv ~/go/bin/pup /usr/local/bin/
-}
-
-for cmd in jq curl pup; do
-  command -v "$cmd" >/dev/null || {
-    log error "missing: $cmd"
-    exit 127
-  }
-done
 
 # ───────────────[ SMART MODE ]
 function smart_mode_execute {
@@ -414,6 +388,34 @@ function process_smart_mode {
   log info "Smart mode: processing all anime${OVERRIDES:+ with overrides: $OVERRIDES}"
   smart_mode_execute
 }
+
+# ────────────────────────────────────────────────────────────
+
+mkdir -p "$STATE_DIR" &>/dev/null
+touch "$STATE_FILE"
+
+parse_args "$@"
+
+detect_mode || true
+validate_normal_mode
+
+# ───────────────[ REQUIREMENTS ]
+command -v pup >/dev/null 2>&1 || {
+  log info "installing pup..."
+  command -v go >/dev/null 2>&1 || {
+    log error 'Go not found. Please install Go.'
+    exit 1
+  }
+  go install github.com/ericchiang/pup@latest
+  sudo mv ~/go/bin/pup /usr/local/bin/
+}
+
+for cmd in jq curl pup; do
+  command -v "$cmd" >/dev/null || {
+    log error "missing: $cmd"
+    exit 127
+  }
+done
 
 # ───────────────[ DRIVER ]
 [[ -n "$SMART_MODE" ]] && process_smart_mode || process_normal_mode
