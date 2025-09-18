@@ -124,7 +124,8 @@ function update_state {
 function get_episodes {
   local ep="$1"
   ep=$(printf "%02d" "$ep")
-  local url="${BASE_URL}/?c=${CAT}&s=seeders&o=desc&q=${QUALITY}+${UPLOADER}+${NAME}+${ep}"
+  local url="${BASE_URL}/?f=0&c=${CAT}&s=seeders&o=desc&q=${QUALITY}+${UPLOADER}+${NAME}+${ep}"
+  log info " 🌐 $url" >&2
   curl -s "${url}" |
     pup 'tr.success json{}' |
     jq '[.[] | {
