@@ -152,26 +152,22 @@ nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 The script supports five main usage patterns:
 
 1. **Smart Mode** (no `--name` provided)
-
    - Updates all anime from the state file automatically
    - Uses stored preferences (quality, uploader) per anime
    - CLI options override stored preferences for this run
    - Example: `nyaa-cli` or `nyaa-cli --quality 1080`
 
 2. **Continue from Last Episode** (`--name` only)
-
    - Automatically continues from the last downloaded episode
    - If no previous episodes found, starts from episode 1
    - Uses state file to track progress
 
 3. **Single Episode** (`--episode`)
-
    - Downloads a specific episode
    - Cannot be used with `--from` or `--to`
    - Example: `--episode 120`
 
 4. **From Episode to Present** (`--from` without `--to`)
-
    - Downloads all available episodes from the starting point
    - Continues until no more episodes are found
    - Example: `--from 120`
@@ -287,6 +283,18 @@ The script will:
 Many other torrent clients also support directory watching for automation.
 
 </details>
+
+---
+
+## Experimental Interactive Mode (Beta)
+
+All arguments can now be collected through a guided prompt interface!
+
+> [!CAUTION]
+> **Try the new interactive mode** in the [`v2-interactive` branch](https://github.com/metaory/nyaa-cli/tree/v2-interactive)
+>
+> - 🚧 Not fully tested
+> - 🚧 might contain unexpected behavior
 
 ---
 
