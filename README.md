@@ -1,6 +1,14 @@
+## Experimental Interactive Mode (Beta)
+
+All arguments can now be collected through a guided prompt interface!
+
 > [!CAUTION]
-> 🚧 Not fully tested
-> 🚧 might contain unexpected behavior
+> **Try the new interactive mode** in the [`v2-interactive` branch](https://github.com/metaory/nyaa-cli/tree/v2-interactive)
+>
+> - 🚧 Not fully tested
+> - 🚧 might contain unexpected behavior
+
+---
 
 <div align="center">
     <h1>nyaa-cli</h1>
