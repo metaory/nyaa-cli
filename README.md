@@ -291,7 +291,7 @@ Many other torrent clients also support directory watching for automation.
 All arguments can now be collected through a guided prompt interface!
 
 > [!CAUTION]
-> **Try the new interactive mode** in the [`v2-interactive` branch](https://github.com/metaory/nyaa-cli/tree/v2-interactive)
+> **Try the new interactive mode** [`v2-interactive`](https://github.com/metaory/nyaa-cli/tree/v2-interactive) branch
 >
 > - 🚧 Not fully tested
 > - 🚧 might contain unexpected behavior
