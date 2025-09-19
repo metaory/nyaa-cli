@@ -1,3 +1,7 @@
+> [!CAUTION]
+> 🚧 Not fully tested
+> 🚧 might contain unexpected behavior
+
 <div align="center">
     <h1>nyaa-cli</h1>
     <img src=".github/logo.svg" alt="nyaa-cli" width="128" height="128">
