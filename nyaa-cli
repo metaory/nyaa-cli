@@ -36,6 +36,7 @@ STATE_FILE="$STATE_DIR/progress"
 # ───────────────[ STATE ]
 SMART_MODE=""
 OVERRIDES=""
+INTERACTIVE_MODE=""
 
 # ───────────────[ LOG ]
 function log {
@@ -209,11 +210,13 @@ ${C6}nyaa-cli${c0} :: ${C3}Smart anime torrent fetcher with stateful episode tra
 
 ${C5}Usage:${c0}
   ${C2}nyaa-cli                                   ${C4}# Smart mode: update all anime
+  ${C2}nyaa-cli${c0} ${C3}-i                                    ${C4}# Interactive mode
   ${C2}nyaa-cli${c0} ${C3}-q 480                            ${C4}# Smart mode with quality override
   ${C2}nyaa-cli${c0} ${C3}-n "one piece" -e 120             ${C4}# Normal mode: specific episode
   ${C2}nyaa-cli${c0} ${C3}-n "one piece" -f 120 [-t 130]    ${C4}# Normal mode: episode range
 
 ${C5}Options:${c0}
+  ${C2}-i, --interactive${c4} Interactive mode with guided prompts
   ${C2}-n, --name${c4}      Anime name (omit for smart mode)
   ${C2}-e, --episode${c4}   Download a single episode
   ${C2}-f, --from${c4}      Starting episode (exclusive with -e)
@@ -222,6 +225,13 @@ ${C5}Options:${c0}
   ${C2}-u, --uploader${c4}  Uploader filter (e.g. ${C3}Erai${c0}, ${C3}SubsPlease${c0})
   ${C2}-o, --output${c4}    Output directory (default: ${C3}./output${c0})
   ${C2}-h, --help${c4}      Show this help message
+
+${C5}Interactive Mode:${c4}
+  • Guided prompts for all options with smart defaults
+  • Quality selection: 480, 720, 1080
+  • Uploader selection: SubsPlease, Erai, Ember
+  • Numeric input for episodes with validation
+  • Text input for anime name and output directory
 
 ${C5}Smart Mode:${c4}
   • Omit ${C2}--name${c4} to process all anime from state file
@@ -257,6 +267,10 @@ function parse_args {
     --help | -h)
       usage
       exit 0
+      ;;
+    --interactive | -i)
+      INTERACTIVE_MODE="true"
+      shift
       ;;
     --episode | -e)
       validate_numeric "--episode" "$2"
@@ -303,38 +317,7 @@ function parse_args {
 }
 
 function detect_mode {
-  [[ -z "$NAME" ]] && SMART_MODE="true"
-}
-
-function validate_normal_mode {
-  [[ -n "$SMART_MODE" ]] && return
-
-  if [[ -n "$TO" && -z "$FROM" ]]; then
-    log error "--to can only be used with --from"
-    usage
-    exit 1
-  fi
-
-  if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
-    log error "--to ($TO) must be greater than --from ($FROM)"
-    usage
-    exit 1
-  fi
-
-  # Load stored parameters for this anime (respects CLI overrides)
-  load_stored_params "$NAME"
-
-  if [[ -z "$FROM" ]]; then
-    local last_ep
-    last_ep=$(get_last_episode "$NAME")
-    if [[ -z "$last_ep" ]]; then
-      log info "No previous episodes found for $NAME, starting from episode 1"
-      FROM=1
-    else
-      log info "Found last episode $last_ep for $NAME in state file"
-      FROM=$((last_ep + 1))
-    fi
-  fi
+  [[ -z "$INTERACTIVE_MODE" && -z "$NAME" ]] && SMART_MODE="true"
 }
 
 # ───────────────[ SMART MODE ]
@@ -376,17 +359,123 @@ function logheader {
   printf '\033[1;36m╰─────────────────────────────────╴─╴─╴╴╴╴\033[0m\n\n'
 }
 
-function process_normal_mode {
-  logheader QUALITY UPLOADER NAME FROM TO OUTPUT
-  mkdir -p "$OUTPUT" &>/dev/null
-  log info "Starting download from episode $(highlight "$FROM")${TO:+ to $(highlight "$TO")}"
+# ───────────────[ INPUT COLLECTION ]
+function collect_inputs_interactive {
+  log info "Entering interactive mode..."
   printf '\n' >&2
-  accumulate_episodes "$FROM"
+
+  # Anime name input (only if not provided via CLI)
+  [[ -z "$NAME" ]] && {
+    NAME=$(gum input --placeholder "Enter anime name (e.g., one piece)")
+    [[ -z "$NAME" ]] && {
+      log error "Anime name is required"
+      exit 1
+    }
+  }
+  NAME="${NAME// /+}"
+  NAME="${NAME,,}"
+
+  # Quality selection (only if not overridden)
+  [[ ! "$OVERRIDES" == *"quality"* ]] && {
+    QUALITY=$(gum choose --height 3 "480" "720" "1080" --header "Select video quality")
+    [[ -z "$QUALITY" ]] && QUALITY="720"
+  }
+
+  # Uploader selection (only if not overridden)
+  [[ ! "$OVERRIDES" == *"uploader"* ]] && {
+    UPLOADER=$(gum choose --height 3 "SubsPlease" "Erai" "Ember" "Any" --header "Select uploader (Any = highest seeder)")
+    [[ "$UPLOADER" == "Any" ]] && UPLOADER=""
+  }
+
+  # Episode mode selection (only if not provided via CLI)
+  [[ -z "$FROM" && -z "$TO" ]] && {
+    local ep_mode
+    ep_mode=$(gum choose --height 4 "Single episode" "Episode range" "From episode to present" "Smart mode (continue from last)" --header "Select episode mode")
+
+    case "$ep_mode" in
+    "Single episode")
+      FROM=$(gum input --placeholder "Enter episode number" --prompt "Episode: " --char-limit 4)
+      validate_numeric "--episode" "$FROM"
+      TO="$FROM"
+      ;;
+    "Episode range")
+      FROM=$(gum input --placeholder "Enter starting episode" --prompt "From: " --char-limit 4)
+      validate_numeric "--from" "$FROM"
+      TO=$(gum input --placeholder "Enter ending episode" --prompt "To: " --char-limit 4)
+      validate_numeric "--to" "$TO"
+      [[ "$TO" -lt "$FROM" ]] && {
+        log error "--to ($TO) must be greater than --from ($FROM)"
+        exit 1
+      }
+      ;;
+    "From episode to present")
+      FROM=$(gum input --placeholder "Enter starting episode" --prompt "From: " --char-limit 4)
+      validate_numeric "--from" "$FROM"
+      TO=""
+      ;;
+    "Smart mode (continue from last)")
+      FROM=""
+      TO=""
+      SMART_MODE="true"
+      ;;
+    esac
+  }
+
+  # Output directory (only if not provided via CLI)
+  [[ "$OUTPUT" == "output" ]] && {
+    OUTPUT=$(gum input --placeholder "Enter output directory" --value "$OUTPUT" --prompt "Output: ")
+  }
+
+  log info "Interactive mode configuration complete"
 }
 
-function process_smart_mode {
-  log info "Smart mode: processing all anime${OVERRIDES:+ with overrides: $OVERRIDES}"
-  smart_mode_execute
+function collect_inputs_normal {
+  # Inputs already collected via CLI args
+  return 0
+}
+
+function finalize_inputs {
+  # Validate episode logic (same for both modes)
+  if [[ -n "$TO" && -z "$FROM" ]]; then
+    log error "--to can only be used with --from"
+    usage
+    exit 1
+  fi
+
+  if [[ -n "$TO" && -n "$FROM" && "$TO" -lt "$FROM" ]]; then
+    log error "--to ($TO) must be greater than --from ($FROM)"
+    usage
+    exit 1
+  fi
+
+  # Load stored parameters for this anime if not in smart mode
+  [[ -z "$SMART_MODE" ]] && load_stored_params "$NAME"
+
+  # Set FROM if not set (smart mode logic)
+  if [[ -z "$FROM" && -z "$SMART_MODE" ]]; then
+    local last_ep
+    last_ep=$(get_last_episode "$NAME")
+    if [[ -z "$last_ep" ]]; then
+      log info "No previous episodes found for $NAME, starting from episode 1"
+      FROM=1
+    else
+      log info "Found last episode $last_ep for $NAME in state file"
+      FROM=$((last_ep + 1))
+    fi
+  fi
+}
+
+function process_mode {
+  logheader QUALITY UPLOADER NAME FROM TO OUTPUT
+  mkdir -p "$OUTPUT" &>/dev/null
+
+  if [[ -n "$SMART_MODE" ]]; then
+    smart_mode_execute
+  else
+    log info "Starting download from episode $(highlight "$FROM")${TO:+ to $(highlight "$TO")}"
+    printf '\n' >&2
+    accumulate_episodes "$FROM"
+  fi
 }
 
 # ────────────────────────────────────────────────────────────
@@ -397,7 +486,6 @@ touch "$STATE_FILE"
 parse_args "$@"
 
 detect_mode || true
-validate_normal_mode
 
 # ───────────────[ REQUIREMENTS ]
 command -v pup >/dev/null 2>&1 || {
@@ -410,6 +498,19 @@ command -v pup >/dev/null 2>&1 || {
   sudo mv ~/go/bin/pup /usr/local/bin/
 }
 
+# Check for gum if in interactive mode
+[[ -n "$INTERACTIVE_MODE" ]] && {
+  command -v gum >/dev/null 2>&1 || {
+    log info "installing gum..."
+    command -v go >/dev/null 2>&1 || {
+      log error 'Go not found. Please install Go.'
+      exit 1
+    }
+    go install github.com/charmbracelet/gum@latest
+    sudo mv ~/go/bin/gum /usr/local/bin/
+  }
+}
+
 for cmd in jq curl pup; do
   command -v "$cmd" >/dev/null || {
     log error "missing: $cmd"
@@ -418,4 +519,7 @@ for cmd in jq curl pup; do
 done
 
 # ───────────────[ DRIVER ]
-[[ -n "$SMART_MODE" ]] && process_smart_mode || process_normal_mode
+[[ -n "$INTERACTIVE_MODE" ]] && collect_inputs_interactive
+[[ -z "$INTERACTIVE_MODE" ]] && collect_inputs_normal
+finalize_inputs
+process_mode

@@ -18,7 +18,7 @@
 - `Bash 5.0+`
 - `jq`
 - `curl`
-- `Go` _(needed for first-time installation of `pup`)_
+- `Go` _(needed for first-time installation of `pup` and `gum`)_
 
 <details>
 <summary><strong>Bash 5+ (macOS users only)</strong></summary>
@@ -82,19 +82,28 @@ nyaa-cli :: Smart anime torrent fetcher with stateful episode tracking
 
 Usage:
   nyaa-cli                                      # Smart mode: update all anime
+  nyaa-cli -i                                   # Interactive mode
   nyaa-cli -q 480                               # Smart mode with quality override
   nyaa-cli -n "one piece" -e 120                # Normal mode: specific episode
   nyaa-cli -n "one piece" -f 120 [-t 130]       # Normal mode: episode range
 
 Options:
-  -n, --name      Anime name (omit for smart mode)
-  -e, --episode   Download a single episode
-  -f, --from      Starting episode (exclusive with -e)
-  -t, --to        Ending episode (optional, with -f)
-  -q, --quality   Video quality (default: 720)
-  -u, --uploader  Uploader filter (e.g. Erai, SubsPlease)
-  -o, --output    Output directory (default: ./output)
-  -h, --help      Show this help message
+  -i, --interactive  Interactive mode with guided prompts
+  -n, --name        Anime name (omit for smart mode)
+  -e, --episode     Download a single episode
+  -f, --from        Starting episode (exclusive with -e)
+  -t, --to          Ending episode (optional, with -f)
+  -q, --quality     Video quality (default: 720)
+  -u, --uploader    Uploader filter (e.g. Erai, SubsPlease)
+  -o, --output      Output directory (default: ./output)
+  -h, --help        Show this help message
+
+Interactive Mode:
+  • Guided prompts for all options with smart defaults
+  • Quality selection: 480, 720, 1080
+  • Uploader selection: SubsPlease, Erai, Ember
+  • Numeric input for episodes with validation
+  • Text input for anime name and output directory
 
 Smart Mode:
   • Omit --name to process all anime from state file
@@ -111,6 +120,13 @@ Notes:
 ### Examples
 
 ```bash
+# Interactive mode - guided prompts for all options
+nyaa-cli -i
+
+# Interactive mode with CLI overrides
+nyaa-cli -i --quality "1080"
+nyaa-cli -i --name "one piece"
+
 # Smart mode - update all anime from state file
 nyaa-cli
 
@@ -149,38 +165,97 @@ nyaa-cli --name "one piece" --from 120 --uploader "Erai"
 <details id="usage-patterns">
 <summary><strong>Usage Patterns</strong></summary>
 
-The script supports five main usage patterns:
+The script supports six main usage patterns:
 
-1. **Smart Mode** (no `--name` provided)
+1. **Interactive Mode** (`--interactive` or `-i`)
+   - Guided prompts for all options with smart defaults
+   - Quality selection: 480, 720, 1080
+   - Uploader selection: SubsPlease, Erai, Ember, Any
+   - Episode mode selection: Single, Range, From-to-present, Smart mode
+   - CLI options override interactive prompts
+   - Example: `nyaa-cli -i` or `nyaa-cli -i --quality 1080`
 
+2. **Smart Mode** (no `--name` provided)
    - Updates all anime from the state file automatically
    - Uses stored preferences (quality, uploader) per anime
    - CLI options override stored preferences for this run
    - Example: `nyaa-cli` or `nyaa-cli --quality 1080`
 
-2. **Continue from Last Episode** (`--name` only)
-
+3. **Continue from Last Episode** (`--name` only)
    - Automatically continues from the last downloaded episode
    - If no previous episodes found, starts from episode 1
    - Uses state file to track progress
 
-3. **Single Episode** (`--episode`)
-
+4. **Single Episode** (`--episode`)
    - Downloads a specific episode
    - Cannot be used with `--from` or `--to`
    - Example: `--episode 120`
 
-4. **From Episode to Present** (`--from` without `--to`)
-
+5. **From Episode to Present** (`--from` without `--to`)
    - Downloads all available episodes from the starting point
    - Continues until no more episodes are found
    - Example: `--from 120`
 
-5. **Episode Range** (`--from` and `--to`)
+6. **Episode Range** (`--from` and `--to`)
    - Downloads episodes within a specific range
    - `--to` must be greater than `--from`
    - Example: `--from 120 --to 130`
    </details>
+
+---
+
+<details>
+<summary><strong>Interactive Mode</strong></summary>
+
+The interactive mode provides a user-friendly interface for configuring downloads with guided prompts. It's perfect for users who prefer a step-by-step approach or want to explore all available options.
+
+### Features
+
+- **Smart Defaults**: Uses current values and stored preferences as defaults
+- **CLI Override Support**: Any CLI arguments override interactive prompts
+- **Input Validation**: All inputs are validated before proceeding
+- **Episode Mode Selection**: Choose between single episode, range, from-to-present, or smart mode
+
+### Example Interactive Session
+
+```bash
+$ nyaa-cli -i
+
+🔘 Entering interactive mode...
+
+? Enter anime name (e.g., one piece) › one piece
+? Select video quality › 720
+? Select uploader (Any = highest seeder) › SubsPlease
+? Select episode mode › Single episode
+? Enter episode number › 120
+? Enter output directory › ./output
+
+🔘 Interactive mode configuration complete
+
+╭─[ NYAA CLI ]────────────────╴───╶╴──╶╴╴
+│ Quality     : 720
+│ Uploader    : SubsPlease
+│ Name        : one+piece
+│ From        : 120
+│ To          : 120
+│ Output      : ./output
+╰─────────────────────────────────╴─╴─╴╴╴╴
+```
+
+### CLI Override Examples
+
+```bash
+# Override quality in interactive mode
+nyaa-cli -i --quality 1080
+
+# Override anime name in interactive mode
+nyaa-cli -i --name "solo leveling"
+
+# Override multiple options
+nyaa-cli -i --quality 1080 --uploader "Erai" --output "/path/to/torrents"
+```
+
+</details>
 
 ---
 
