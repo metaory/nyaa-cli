@@ -402,12 +402,21 @@ validate_normal_mode
 # ───────────────[ REQUIREMENTS ]
 command -v pup >/dev/null 2>&1 || {
   log info "installing pup..."
-  command -v go >/dev/null 2>&1 || {
-    log error 'Go not found. Please install Go.'
-    exit 1
+
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+  arch=$(uname -m | sed 's/x86_64/amd64/; s/arm64/arm64/')
+
+  tmp="/tmp/pup-$$.zip"
+  curl -sL "https://github.com/ericchiang/pup/releases/download/v0.4.0/pup_v0.4.0_${os}_${arch}.zip" -o "$tmp" && {
+    (unzip -q -j "$tmp" || bsdtar -xf "$tmp") && chmod +x pup && sudo mv pup /usr/bin/ && rm "$tmp"
   }
-  go install github.com/ericchiang/pup@latest
-  sudo mv ~/go/bin/pup /usr/local/bin/
+
+  if command -v pup >/dev/null 2>&1; then
+    log success "pup installed"
+  else
+    log error "pup installation failed"
+    exit 1
+  fi
 }
 
 for cmd in jq curl pup; do
@@ -416,6 +425,12 @@ for cmd in jq curl pup; do
     exit 127
   }
 done
+
+log info "Checking connectivity to nyaa.si..."
+if ! curl -s --connect-timeout 10 "${BASE_URL}" >/dev/null; then
+  log error "Cannot access nyaa.si - site may be blocked or unreachable"
+  exit 1
+fi
 
 # ───────────────[ DRIVER ]
 [[ -n "$SMART_MODE" ]] && process_smart_mode || process_normal_mode

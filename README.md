@@ -18,7 +18,9 @@
 - `Bash 5.0+`
 - `jq`
 - `curl`
-- `Go` _(needed for first-time installation of `pup`)_
+- `pup` _(installed automatically)_
+
+The script automatically downloads and installs `pup` if it's not found - no manual installation needed.
 
 <details>
 <summary><strong>Bash 5+ (macOS users only)</strong></summary>
