@@ -13,6 +13,13 @@
 
 ---
 
+> [!TIP]
+> Checkout its TUI successor `nyaa-tui`
+>
+> [github.com/metaory/nyaa-tui](https://github.com/metaory/nyaa-tui)
+
+---
+
 ## Requirements
 
 - `Bash 5.0+`
