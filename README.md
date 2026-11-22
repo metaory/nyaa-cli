@@ -17,6 +17,9 @@
 > Checkout its TUI successor `nyaa-tui`
 >
 > [github.com/metaory/nyaa-tui](https://github.com/metaory/nyaa-tui)
+>
+> <img width="1280" height="624" alt="demo" src="https://github.com/user-attachments/assets/8c858601-0680-4c8c-bd91-523a620c547a" />
+
 
 ---
 
